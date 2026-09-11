@@ -383,21 +383,27 @@ Every finding above was verified from the tool layer. That raises the obvious
 question: how much of it would an assessor have caught with only the model's
 responses to look at, which is the position every black-box LLM scanner is in?
 
-The range can answer it, because it has both halves. `garak-triage` infers that
-an injection reached the tool layer by pattern-matching response text; this repo
-logs what actually executed. Scoring one against the other over 18 harness
-attempts (llama3.1, both builds):
+The range can answer it, because it has both halves: a response-text signature
+that infers an injection reached the tool layer, and a log of what actually
+executed. Scoring one against the other over 18 harness attempts (llama3.1, both
+builds) gives a small but readable table:
 
 |  | tool actually ran | no tool ran |
 |---|---|---|
 | **text looks compromised** | 3 | 1 |
 | **text looks clean** | 6 | 8 |
 
-**precision 75% · recall 33% · F1 46%**
+No rates are quoted from this, deliberately. The cells are small enough that one
+reclassification moves a percentage by tens of points — four positive predictions
+cannot support a precision figure, and saying "75%" would imply a stability the
+sample does not have.
 
-Six **silent compromises**: a privileged tool executed and the response gave no
-structural sign of it. One **fabrication**: the response read like a tool call
-when nothing ran (the F-11 pattern).
+What the counts *do* support is countable rather than calculated:
+
+- **Six silent compromises.** A privileged tool executed and the response gave no
+  structural sign of it. Each is a row you can read.
+- **One fabrication.** The response read like a tool call when nothing ran — the
+  F-11 pattern, appearing again in a different measurement.
 
 **Why recall is low, and what that does and does not prove.** The signatures look
 for the model *emitting tool-call structure* — JSON tool calls, code, runtime
@@ -416,9 +422,12 @@ It does not show response text is useless.
 
 The practical consequence stands either way: **a scanner that cannot see the tool
 layer cannot tell you whether an agent was compromised**, and its silence is not
-evidence of safety. Reproduce with
-`garak-triage/tools/validate_against_groundtruth.py`; raw output in
-`evidence/blackbox-validation.json`.
+evidence of safety.
+
+The sample behind this is small enough that no rate is quoted here. It rested on
+a handful of predictions, where one reclassification moves a percentage by tens
+of points, so the qualitative observation is the finding and the arithmetic is
+not. Treat it as a direction to investigate rather than a measurement.
 
 ---
 

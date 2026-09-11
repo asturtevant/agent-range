@@ -191,8 +191,9 @@ Two files:
 - [`harness/run.py`](harness/run.py) — runs them, scores them, and prints the
   A/B report.
 
-**What makes it different from an LLM scanner.** Garak and friends ask *did the
-response look like a compromise?* This asks *did the tool actually execute?* —
+**What makes it different from a response-text scanner.** The usual question is
+*did the response look like a compromise?* This asks *did the tool actually
+execute?* —
 the only question that survives a model that fabricates in both directions.
 Every case declares its success condition as an assertion over the
 `[TOOL EXECUTED]` log line, never over the answer text. That is not a
@@ -576,15 +577,6 @@ how to classify a control as architectural versus model-enforced, and what may
 honestly be claimed from a result. It is target-agnostic. The rules transfer to
 any agentic system; the cases do not.
 
-### Testing the endpoint with Garak
-
-To point [Garak](https://github.com/NVIDIA/garak) at the `/chat` endpoint (via its
-REST generator), authentication must be satisfied, either pass a valid session
-cookie in the Garak config headers, or temporarily disable the `/chat` auth guard
-for local testing. Auth is enabled by default in this repo; don't disable it on any
-exposed instance.
-
-
 ## Status
 
 App-layer kill chain complete: thirteen findings identified and written up with ground-truth evidence in the repo. Every harness case — 11 of them — is scored at `--repeat 3` against both builds: **11/11 vulnerable, 0/11 hardened**. The agent is containerized ([`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml)) so the range runs on any host OS.
@@ -593,4 +585,4 @@ No finding is left pending. An infrastructure-escape phase was designed and then
 
 **Complete since:** the assessment harness ([`harness/`](harness/)) runs the findings as a repeatable, tool-layer-scored assessment; the hardened build (`SECURE=1`, all enforcement in [`agent/policy.py`](agent/policy.py)) lets the same attacks be measured against remediated code; the detection rules are now *executed* against real evidence rather than asserted ([`detection/sigma_eval.py`](detection/sigma_eval.py)), which is how F-14 was found; and documentation claims are checked against committed evidence in CI.
 
-**Planned:** pointing [Garak](https://github.com/NVIDIA/garak) at `/chat` as an external cross-check on the hand-built cases — as a contrast to tool-layer scoring, not a replacement for it.
+**Planned:** an external scanner pointed at `/chat` as a cross-check on the hand-built cases — as a contrast to tool-layer scoring, not a replacement for it.
