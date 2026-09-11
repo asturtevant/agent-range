@@ -577,12 +577,3 @@ how to classify a control as architectural versus model-enforced, and what may
 honestly be claimed from a result. It is target-agnostic. The rules transfer to
 any agentic system; the cases do not.
 
-## Status
-
-App-layer kill chain complete: thirteen findings identified and written up with ground-truth evidence in the repo. Every harness case — 11 of them — is scored at `--repeat 3` against both builds: **11/11 vulnerable, 0/11 hardened**. The agent is containerized ([`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml)) so the range runs on any host OS.
-
-No finding is left pending. An infrastructure-escape phase was designed and then **removed rather than claimed**, because it was never executed — see [Findings](#findings). The distinction between "built" and "proven" is enforced by `harness/verify_claims.py` in CI rather than by anyone's memory, and it fires: this README's numbers were rejected by that gate until they were updated to match the run above.
-
-**Complete since:** the assessment harness ([`harness/`](harness/)) runs the findings as a repeatable, tool-layer-scored assessment; the hardened build (`SECURE=1`, all enforcement in [`agent/policy.py`](agent/policy.py)) lets the same attacks be measured against remediated code; the detection rules are now *executed* against real evidence rather than asserted ([`detection/sigma_eval.py`](detection/sigma_eval.py)), which is how F-14 was found; and documentation claims are checked against committed evidence in CI.
-
-**Planned:** an external scanner pointed at `/chat` as a cross-check on the hand-built cases — as a contrast to tool-layer scoring, not a replacement for it.
