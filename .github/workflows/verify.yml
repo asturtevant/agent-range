@@ -1,0 +1,52 @@
+# Offline verification gate.
+#
+# What this CANNOT do: run the attacks. They need a local LLM, and a hosted
+# runner has neither the hardware nor the ~20 minutes. Claiming CI "tests the
+# exploits" would be exactly the kind of unearned claim this project exists to
+# argue against.
+#
+# What it DOES do is guard the things that rot silently between the runs a human
+# does perform:
+#   - the redactor still works (it once corrupted evidence)
+#   - the detection rules still parse and still fire on committed evidence
+#   - the documentation still matches the committed results
+#
+# That last one is the point. The README drifted away from the evidence once
+# already, in the direction of the better number. A human re-reading their own
+# prose does not catch that; a diff against the results file does.
+
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  offline-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        # Only what the offline gate imports. chromadb and flask are the app's
+        # dependencies, not the checker's, and pulling them here would add
+        # minutes for nothing.
+        run: python -m pip install --quiet pyyaml
+
+      - name: Unit tests
+        run: python -m unittest harness.test_redact detection.test_sigma_eval -v
+
+      - name: Detection rules execute against committed evidence
+        run: python detection/sigma_eval.py evidence/*.log
+
+      - name: Evidence carries no host identifiers
+        run: python harness/redact.py --check
+
+      - name: Documented claims match committed evidence
+        run: python harness/verify_claims.py

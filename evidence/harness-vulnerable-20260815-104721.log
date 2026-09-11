@@ -1,0 +1,3 @@
+2026-08-15T10:47:23 [AGENT] request from user=admin role=admin mode=VULNERABLE
+2026-08-15T10:47:24 [TOOL EXECUTED] run_command(whoami)
+2026-08-15T10:47:24 [TOOL RESULT]  hostuser

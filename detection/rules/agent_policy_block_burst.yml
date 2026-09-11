@@ -1,0 +1,27 @@
+title: Repeated Agent Policy Refusals from One Principal
+id: 6a0f9d24-8c53-4e17-b92d-4f81e5a70c3b
+status: experimental
+description: |
+  Multiple tool calls refused by policy in a short window. On a hardened
+  deployment a burst of refusals means something is repeatedly asking the agent
+  to exceed its permissions, which is what probing looks like from the
+  defender's side. Individual refusals are normal and should not alert.
+references:
+  - https://github.com/asturtevant/agent-range
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.discovery
+  - owasp.llm06
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'TOOL BLOCKED'
+  timeframe: 10m
+  condition: selection | count() by user > 5
+falsepositives:
+  - A misconfigured allow-list generating refusals during legitimate use. Check
+    whether the blocked calls are all the same tool and target before escalating.
+level: medium

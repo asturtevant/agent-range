@@ -1,0 +1,38 @@
+title: Instruction-Shaped Content Entering Agent Knowledge Base
+id: 8e2c4b95-7d61-4038-9f2a-5b0e3c17d846
+status: experimental
+description: |
+  Text resembling instructions to an assistant was ingested through a content
+  path (support ticket, upload, sync). This is enrichment, not an alert: payload
+  wording is unbounded and trivially reworded, so this rule cannot be relied on
+  to catch injection. Its value is retrospective, giving an investigator the
+  ingestion event to pivot from once a tool-layer alert fires.
+references:
+  - https://github.com/asturtevant/agent-range
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.initial_access
+  - owasp.llm01
+logsource:
+  product: llm_agent
+  service: ingestion
+detection:
+  selection:
+    event_type: 'INGEST'
+  instruction_shaped:
+    content|contains:
+      - 'ignore previous'
+      - 'ignore all previous'
+      - 'disregard the above'
+      - 'you must actually invoke'
+      - 'do not simulate'
+      - 'do not fabricate'
+      - 'system:'
+      - 'assistant:'
+      - 'before answering, you must'
+  condition: selection and instruction_shaped
+falsepositives:
+  - Users legitimately discussing prompts or pasting transcripts into tickets.
+    Expect this; the rule is intentionally low-confidence.
+level: low

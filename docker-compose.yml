@@ -1,0 +1,51 @@
+# Run the app-layer range (findings F-01 through F-09) in a Linux container,
+# so the host OS stops mattering.
+#
+# Why this exists: the range was originally a plain Python process on the host,
+# and Docker entered later. That left the local
+# lab coupled to the host OS for no good reason. The attacks themselves are
+# Linux-shaped on purpose, since /etc/passwd is the canonical traversal target
+# and agentic apps deploy on Linux, so the target should be Linux everywhere.
+#
+#   docker compose up --build          # vulnerable build, the default
+#   SECURE=1 docker compose up --build # hardened build
+#
+# Then open http://127.0.0.1:5000 and log in as admin / admin123.
+#
+# Ollama runs on the HOST, not in here. Pull the models first:
+#   ollama pull llama3.1 && ollama pull nomic-embed-text
+
+services:
+  range:
+    build: .
+    image: agent-range:latest
+    ports:
+      # Loopback-only on purpose. This app offers remote code execution by
+      # design; binding it to 0.0.0.0 on the host would hand that to the
+      # network. The container itself must bind 0.0.0.0 to be reachable at all,
+      # and the container boundary is what makes that acceptable.
+      - "127.0.0.1:${RANGE_PORT:-5000}:5000"
+    environment:
+      RANGE_BIND: "0.0.0.0"
+      SECURE: "${SECURE:-0}"
+      MODEL: "${MODEL:-llama3.1}"
+      # Reach Ollama on the host. Docker Desktop provides this name on Windows
+      # and macOS; the extra_hosts entry below supplies it on Linux.
+      OLLAMA_URL: "http://host.docker.internal:11434/api/chat"
+      OLLAMA_BASE: "http://host.docker.internal:11434"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Tool-execution logs are the evidence, so they belong on the host where
+      # they survive the container and can be committed.
+      - ./evidence:/app/evidence
+    healthcheck:
+      # /healthz reports which build is answering. Worth wiring in: scoring an
+      # assessment against a stale or unexpected instance is a silent false
+      # negative, and that happened during development.
+      test: ["CMD", "python", "-c",
+             "import urllib.request;urllib.request.urlopen('http://127.0.0.1:5000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s

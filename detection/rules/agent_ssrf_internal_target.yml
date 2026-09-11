@@ -1,0 +1,46 @@
+title: LLM Agent Fetch Targeting Internal or Metadata Address
+id: 5f3b8e07-9c12-4a6d-b7e4-83c1d0a95f27
+status: experimental
+description: |
+  The agent's HTTP tool was pointed at loopback, private address space, or the
+  cloud instance metadata endpoint. The agent sits inside the trust boundary, so
+  it is a request proxy for anything the host can reach (agent-range F-04).
+  The metadata match is the highest-value case: it is the step that converts
+  application compromise into cloud credential theft.
+references:
+  - https://github.com/asturtevant/agent-range
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.discovery
+  - attack.credential_access
+  - attack.t1552.005
+  - owasp.llm06
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'TOOL EXECUTED'
+    tool: 'http_get'
+  internal_target:
+    arguments|contains:
+      - '169.254.169.254'      # AWS/GCP/Azure instance metadata
+      - 'metadata.google.internal'
+      - '127.0.0.1'
+      - 'localhost'
+      - '://10.'
+      - '://192.168.'
+      - '://172.16.'
+      - '://172.17.'
+      - '://172.18.'
+      - '://172.19.'
+      - '://172.2'
+      - '://172.30.'
+      - '://172.31.'
+  condition: selection and internal_target
+falsepositives:
+  - Agents legitimately monitoring internal services. Allow-list those specific
+    hosts rather than disabling the rule; the metadata endpoint should never be
+    allow-listed.
+level: high

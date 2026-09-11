@@ -1,0 +1,44 @@
+title: LLM Agent File Read Outside Permitted Directory
+id: 9b4e1d63-0a78-4f92-8d15-6c2b7e043a58
+status: experimental
+description: |
+  The agent's file-read tool was given a traversal sequence or an absolute path
+  to a sensitive location (agent-range F-05). Note that the model may adjust
+  traversal depth on its own to make a read succeed, so depth-specific matching
+  is unreliable; match the traversal token and sensitive targets instead.
+references:
+  - https://github.com/asturtevant/agent-range
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.collection
+  - attack.t1005
+  - owasp.llm06
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'TOOL EXECUTED'
+    tool: 'read_file'
+  traversal:
+    arguments|contains:
+      - '../'
+      - '..\\'
+      - '%2e%2e'
+  sensitive:
+    arguments|contains:
+      - '/etc/passwd'
+      - '/etc/shadow'
+      - '.ssh/'
+      - '.aws/credentials'
+      - '.env'
+      # Still listed even though this repo ships no cluster: any containerised
+      # agent mounts this, and it is the highest-value file an arbitrary read
+      # can reach. A rule should cover the deployment, not just the lab.
+      - '/var/run/secrets/kubernetes.io/serviceaccount/token'
+  condition: selection and (traversal or sensitive)
+falsepositives:
+  - Relative paths used routinely by the application. Prefer an allow-list of
+    permitted directories over tuning this rule.
+level: high

@@ -1,0 +1,90 @@
+title: Retrieval Immediately Followed by Privileged Tool Call
+id: 3d7a6f18-2b95-4c03-a6e8-71f4b28c9d40
+status: experimental
+description: |
+  Correlates a knowledge-base retrieval with a privileged tool call that follows
+  it within seconds. This is the signature of indirect prompt injection reaching
+  execution (agent-range F-09): attacker-controlled content enters the model's
+  context through retrieval, and the agent then acts on instructions hidden
+  inside it.
+
+  This correlation is frequently the only observable moment in the entire chain.
+  The attacker never authenticates and never contacts the agent; they submit
+  content through an ordinary ingestion path and wait for a privileged user to
+  ask an unrelated question.
+references:
+  - https://github.com/asturtevant/agent-range
+  - https://genai.owasp.org/llmrisk/llm01-prompt-injection/
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.execution
+  - attack.initial_access
+  - owasp.llm01
+  - owasp.llm08
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'RAG RESULT'
+  condition: selection
+falsepositives:
+  - 'Any retrieval the agent performs. This base rule is not an alert on its own;
+     it exists to be referenced by the correlation below.'
+level: informational
+---
+name: agent_retrieval_event
+title: Agent Knowledge-Base Retrieval
+id: c41b7e08-5d92-4a36-8b70-2e9f6a13c58d
+status: experimental
+description: Base event - the agent retrieved documents into its context.
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'RAG RESULT'
+  condition: selection
+level: informational
+---
+name: agent_privileged_tool_event
+title: Agent Privileged Tool Execution
+id: b8f2d5a1-93c7-4e60-af14-70d3c8b26e95
+status: experimental
+description: Base event - the agent executed a tool with real capability.
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'TOOL EXECUTED'
+    tool:
+      - 'run_command'
+      - 'read_file'
+      - 'http_get'
+      - 'query_customers'
+  condition: selection
+level: informational
+---
+title: Indirect Prompt Injection Reaching Tool Execution
+id: 1e6c9a37-4b28-40df-95a1-8c07f2e5b3d6
+status: experimental
+description: |
+  A privileged tool executed within 30 seconds of a knowledge-base retrieval.
+  See agent-range F-09.
+correlation:
+  type: temporal_ordered
+  rules:
+    - agent_retrieval_event
+    - agent_privileged_tool_event
+  group-by:
+    - user
+  timespan: 30s
+falsepositives:
+  - 'An assistant that legitimately looks something up and then acts on it. This
+     WILL fire on benign workflows and must be tuned per deployment by narrowing
+     the window, scoping to specific tools, or allow-listing known-good pairs.
+     Do not ship it untuned. Do not delete it either, because it is the only rule
+     that observes the injection chain end to end.'
+level: critical

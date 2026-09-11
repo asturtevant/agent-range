@@ -1,0 +1,16 @@
+flask>=3.0
+requests>=2.31
+chromadb>=0.5        # RAG vector store
+pyyaml>=6.0          # harness/run.py parses cases.yaml
+
+# pyyaml arrives transitively via chromadb today, so the harness ran without it
+# being declared. That is luck, not a dependency: it breaks silently the moment
+# chromadb drops it or the harness is installed on its own.
+
+# Embeddings are served by Ollama (nomic-embed-text) over HTTP, so no local
+# embedding library is needed. `sentence-transformers` was declared here
+# earlier but never imported — it pulls in torch (~2GB) and made a first-time
+# setup far heavier than the project actually requires.
+#
+# Planned, not yet used:
+#   mcp>=1.0         # Model Context Protocol integration

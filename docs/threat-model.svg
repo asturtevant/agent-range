@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" width="940" height="620" font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" role="img" aria-labelledby="t d">
+<title id="t">Agentic Attack Range — trust boundaries and where they fail</title>
+<desc id="d">Five trust boundaries between the internet and the cloud control plane. The internet-to-session boundary is enforced. Session-to-model-context and model-to-tools are not, and each maps to findings. Process-to-cluster is modelled but was never assessed. An unauthenticated ingestion path crosses every boundary asynchronously, carrying an attacker payload into a privileged user's session.</desc>
+
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
+  </marker>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#dc2626"/>
+  </marker>
+</defs>
+
+<style>
+  .bg    { fill: #ffffff; }
+  .zone  { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 10; }
+  .zlab  { fill: #64748b; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+  .box   { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; rx: 7; }
+  .btxt  { fill: #0f172a; font-size: 13px; font-weight: 600; }
+  .bsub  { fill: #64748b; font-size: 11px; }
+  .flow  { stroke: #64748b; stroke-width: 1.6; fill: none; marker-end: url(#a); }
+  .attack{ stroke: #dc2626; stroke-width: 2.2; fill: none; marker-end: url(#ar); stroke-dasharray: 7 4; }
+  .atxt  { fill: #dc2626; font-size: 11.5px; font-weight: 600; }
+  .ok    { stroke: #16a34a; stroke-width: 2.5; }
+  .bad   { stroke: #dc2626; stroke-width: 2.5; stroke-dasharray: 6 4; }
+  .blab  { font-size: 11px; font-weight: 700; }
+  .okl   { fill: #16a34a; }
+  .badl  { fill: #dc2626; }
+  .find  { fill: #b91c1c; font-size: 10.5px; font-weight: 600; }
+  .note  { fill: #475569; font-size: 11px; }
+  .ttl   { fill: #0f172a; font-size: 15px; font-weight: 700; }
+  @media (prefers-color-scheme: dark) {
+    .bg   { fill: #0b1220; }
+    .zone { fill: #131c2e; stroke: #334155; }
+    .box  { fill: #1a2438; stroke: #475569; }
+    .btxt { fill: #e2e8f0; }
+    .bsub, .zlab, .note { fill: #94a3b8; }
+    .ttl  { fill: #f1f5f9; }
+    .find { fill: #fca5a5; }
+  }
+</style>
+
+<rect class="bg" x="0" y="0" width="940" height="620"/>
+<text class="ttl" x="24" y="30">Agentic Attack Range — five trust boundaries, and which ones hold</text>
+<text class="note" x="24" y="50">Green = enforced. Red = described but not enforced, with a finding behind it. Grey dashed = modelled, never assessed.</text>
+
+<!-- ZONE 1: internet -->
+<rect class="zone" x="24" y="72" width="196" height="290"/>
+<text class="zlab" x="38" y="94">INTERNET · UNTRUSTED</text>
+
+<rect class="box" x="40" y="108" width="164" height="52"/>
+<text class="btxt" x="54" y="130">Anonymous attacker</text>
+<text class="bsub" x="54" y="147">no credentials</text>
+
+<rect class="box" x="40" y="182" width="164" height="60"/>
+<text class="btxt" x="54" y="204">POST /submit_ticket</text>
+<text class="bsub" x="54" y="221">public, unauthenticated</text>
+<text class="bsub" x="54" y="234">the attacker's front door</text>
+
+<rect class="box" x="40" y="264" width="164" height="52"/>
+<text class="btxt" x="54" y="286">Legitimate user</text>
+<text class="bsub" x="54" y="303">viewer / admin login</text>
+
+<!-- ZONE 2: application -->
+<rect class="zone" x="264" y="72" width="330" height="400"/>
+<text class="zlab" x="278" y="94">APPLICATION</text>
+
+<rect class="box" x="282" y="108" width="294" height="56"/>
+<text class="btxt" x="296" y="130">Session layer — real auth</text>
+<text class="bsub" x="296" y="148">login, server-side sessions, protected routes</text>
+
+<rect class="box" x="282" y="196" width="294" height="76"/>
+<text class="btxt" x="296" y="218">Model context</text>
+<text class="bsub" x="296" y="236">system prompt + user message + retrieved</text>
+<text class="bsub" x="296" y="250">docs + tool results — one flat block of text</text>
+<text class="find" x="296" y="266">F-09 · F-12 — no separation of provenance</text>
+
+<rect class="box" x="282" y="304" width="294" height="76"/>
+<text class="btxt" x="296" y="326">Tool dispatch</text>
+<text class="bsub" x="296" y="344">caller identity arrives, then is dropped</text>
+<text class="bsub" x="296" y="358">a viewer reaches every admin tool</text>
+<text class="find" x="296" y="374">F-01 · F-02 · F-08 — confused deputy</text>
+
+<rect class="box" x="282" y="404" width="294" height="52"/>
+<text class="btxt" x="296" y="426">Knowledge base (RAG)</text>
+<text class="bsub" x="296" y="443">ingests anything; trusts everything</text>
+
+<!-- ZONE 3: host + cluster -->
+<rect class="zone" x="638" y="72" width="278" height="400"/>
+<text class="zlab" x="652" y="94">HOST · RUNTIME</text>
+
+<rect class="box" x="656" y="108" width="244" height="86"/>
+<text class="btxt" x="670" y="130">Tools with real capability</text>
+<text class="bsub" x="670" y="148">run_command · read_file</text>
+<text class="bsub" x="670" y="162">http_get · query_customers</text>
+<text class="find" x="670" y="180">F-05 · F-07 · F-04 · F-13</text>
+
+<rect class="box" x="656" y="220" width="244" height="66"/>
+<text class="btxt" x="670" y="242">Container runtime</text>
+<text class="bsub" x="670" y="260">any code in the container reads</text>
+<text class="bsub" x="670" y="274">whatever the process can reach</text>
+
+<rect class="box" x="656" y="312" width="244" height="66"/>
+<text class="btxt" x="670" y="334">Orchestrator / cloud API</text>
+<text class="bsub" x="670" y="352">boundary modelled, NOT assessed</text>
+<text class="find" x="670" y="368">out of scope — see FINDINGS.md</text>
+
+<rect class="box" x="656" y="404" width="244" height="52"/>
+<text class="btxt" x="670" y="426">Cloud credentials</text>
+<text class="bsub" x="670" y="443">AWS keys, DB password</text>
+
+<!-- boundary 1: enforced -->
+<line class="ok" x1="242" y1="264" x2="242" y2="330"/>
+<text class="blab okl" x="196" y="352">✓ ENFORCED</text>
+
+<!-- boundaries: not enforced -->
+<line class="bad" x1="612" y1="108" x2="612" y2="200"/>
+<text class="blab badl" x="600" y="100" text-anchor="middle">✗ model → tools</text>
+
+<line class="bad" x1="612" y1="300" x2="612" y2="380"/>
+<text class="blab badl" x="612" y="396" text-anchor="middle">? process → cluster</text>
+
+<!-- flows -->
+<path class="flow" d="M204 290 L282 290 L282 136"/>
+<path class="flow" d="M576 136 L616 136 L616 150 L656 150"/>
+<path class="flow" d="M576 342 L656 342" opacity="0"/>
+<path class="flow" d="M900 194 L916 194 L916 253 L900 253"/>
+<path class="flow" d="M778 286 L778 312"/>
+<path class="flow" d="M778 378 L778 404"/>
+
+<!-- the attack path -->
+<path class="attack" d="M124 160 L124 182"/>
+<path class="attack" d="M204 212 C 240 212, 250 430, 282 430"/>
+<text class="atxt" x="212" y="470">1 · unauthenticated</text>
+<text class="atxt" x="212" y="486">ingestion</text>
+
+<path class="attack" d="M429 404 L429 272"/>
+<text class="atxt" x="440" y="292">2 · retrieved into a</text>
+<text class="atxt" x="440" y="308">privileged session</text>
+
+<path class="attack" d="M576 232 C 620 232, 620 140, 656 140"/>
+<text class="atxt" x="596" y="206">3 · RCE</text>
+
+<path class="flow" d="M778 194 L778 220" stroke-dasharray="4 4"/>
+<text class="note" x="790" y="212">4 · not assessed</text>
+
+<path class="flow" d="M916 286 C 932 286, 932 430, 900 430" stroke-dasharray="4 4"/>
+<text class="note" x="676" y="482">5 · modelled, never executed</text>
+
+<!-- footer -->
+<line x1="24" y1="512" x2="916" y2="512" stroke="#cbd5e1" stroke-width="1"/>
+<text class="note" x="24" y="536">The ingestion path (red) crosses every boundary — but asynchronously, and while the attacker is absent. The data does the crossing, not the attacker.</text>
+<text class="note" x="24" y="556">No request from the attacker is ever authenticated, because no request from the attacker is ever made at the moment of compromise.</text>
+<text class="note" x="24" y="582">Hardened mode (SECURE=1) removes run_command entirely, authorizes tools against the caller, contains read_file, and allow-lists http_get.</text>
+<text class="note" x="24" y="602">It does not close F-12: fencing is applied to retrieved documents, and conversation history is not retrieved — it is already in the transcript.</text>
+</svg>

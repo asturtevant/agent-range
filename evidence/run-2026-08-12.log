@@ -1,0 +1,16 @@
+2026-08-12T07:18:32 [AGENT] request from user=viewer role=viewer mode=VULNERABLE
+2026-08-12T07:18:41 [TOOL EXECUTED] read_file(../../../../../etc/passwd)
+2026-08-12T07:18:41 [TOOL RESULT]  ##
+2026-08-12T07:18:41 # User Database
+2026-08-12T07:18:41 # 
+2026-08-12T07:18:41 # Note that this file is consulted directly only when the system is running
+2026-08-12T07:18:41 # in single-user mode.  At other times this information is provided by
+2026-08-12T07:18:41 # Open Directory.
+2026-08-12T07:18:41 #
+2026-08-12T07:18:41 # See the opendirectoryd(8) man page for additional information about
+2026-08-12T07:18:41 # Open Directory.
+2026-08-12T07:18:41 ##
+2026-08-12T07:18:41 nobody:*:-2:-2:Unpri
+2026-08-12T07:18:55 [AGENT] request from user=viewer role=viewer mode=VULNERABLE
+2026-08-12T07:18:57 [TOOL EXECUTED] http_get(http://127.0.0.1:11434/api/tags)
+2026-08-12T07:18:57 [TOOL RESULT]  200 {"models":[{"name":"nomic-embed-text:latest","model":"nomic-embed-text:latest","modified_at":"2026-04-11T20:53:07.400071399-06:00","size":274302450,"digest":"0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f","details":{"parent_model":"","format":"gguf","family":"nomic-bert","fami

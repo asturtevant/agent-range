@@ -1,0 +1,29 @@
+title: Shell Command Executed by LLM Agent
+id: 7c1f0e2a-3b4d-4e58-9a21-0d6f8b5c4e11
+status: experimental
+description: |
+  An LLM agent invoked a shell tool. In most deployments the agent has no
+  legitimate reason to reach a shell, so this is treated as high severity by
+  default rather than tuned down. Corresponds to agent-range F-07, and is the
+  execution primitive the indirect-injection chain (F-09) terminates in.
+references:
+  - https://github.com/asturtevant/agent-range
+  - https://genai.owasp.org/llmrisk/llm06-excessive-agency/
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.execution
+  - attack.t1059
+  - owasp.llm06
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  selection:
+    event_type: 'TOOL EXECUTED'
+    tool: 'run_command'
+  condition: selection
+falsepositives:
+  - Deployments that deliberately expose a diagnostic shell. If that is the
+    design, alert on the command content instead and allow-list the expected set.
+level: high

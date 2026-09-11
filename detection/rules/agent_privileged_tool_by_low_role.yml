@@ -1,0 +1,37 @@
+title: Privileged Agent Tool Invoked for Low-Privilege Caller
+id: 2a9d5c81-6e47-4b3f-8c05-1f7a2e9d4b62
+status: experimental
+description: |
+  A privileged tool executed while the requesting principal held a low-privilege
+  role. The agent acted with its own ambient privilege rather than the caller's:
+  the confused-deputy condition (agent-range F-08). Authentication being present
+  does not imply authorization is enforced at the tool layer.
+references:
+  - https://github.com/asturtevant/agent-range
+author: Agentic Attack Range
+date: 2026/08/12
+tags:
+  - attack.privilege_escalation
+  - attack.t1548
+  - owasp.llm06
+logsource:
+  product: llm_agent
+  service: tool_layer
+detection:
+  execution:
+    event_type: 'TOOL EXECUTED'
+    tool:
+      - 'run_command'
+      - 'query_customers'
+      - 'read_file'
+      - 'http_get'
+  low_privilege:
+    role:
+      - 'viewer'
+      - 'anonymous'
+      - 'guest'
+  condition: execution and low_privilege
+falsepositives:
+  - Roles intended to carry these capabilities. Align the role list with the
+    deployment's actual authorization model before enabling.
+level: high
