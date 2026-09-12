@@ -63,7 +63,7 @@ crossed by the *data*, asynchronously, while the attacker is not present.
 
 ## Findings
 
-Fourteen findings across the app, infrastructure and monitoring layers, each
+Thirteen findings across the application and monitoring layers, each
 written up in [`FINDINGS.md`](FINDINGS.md) with the exact input, the
 ground-truth `[TOOL EXECUTED]` line, taxonomy mapping, root cause and
 remediation.
